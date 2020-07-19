@@ -1,18 +1,34 @@
 from django.contrib.auth import login, authenticate
 from django.http import JsonResponse
 
-from rest_framework import generics, permissions, status, views
+from rest_framework import authentication, generics, permissions, status, views
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
+from rest_framework.views import APIView
+
 from requests.exceptions import HTTPError
  
 from social_django.utils import load_strategy, load_backend
 from social_core.backends.oauth import BaseOAuth2
 from social_core.exceptions import MissingBackend, AuthTokenError, AuthForbidden
-from . import serializers
- 
 
-class SocialLoginView(generics.GenericAPIView):
+from . import serializers
+
+
+class UserStatus(APIView):
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, format=None):
+        serializer = serializers.UserSerializer(instance=request.user)
+
+        return Response({
+            'account': serializer.data,
+            'status': status.HTTP_400_BAD_REQUEST,
+        })
+
+
+class SocialLogin(generics.GenericAPIView):
     """Log in using facebook"""
     serializer_class = serializers.SocialSerializer
     permission_classes = [permissions.AllowAny]
@@ -31,10 +47,10 @@ class SocialLoginView(generics.GenericAPIView):
                 strategy=strategy, name=provider, redirect_uri=None
             )
         except MissingBackend:
-            return Response(
-                {'error': 'Please provide a valid provider'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({
+                'error': 'Please provide a valid provider',
+                'status': status.HTTP_400_BAD_REQUEST,
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         print(backend)
 
@@ -48,12 +64,14 @@ class SocialLoginView(generics.GenericAPIView):
                 "error": {
                     "access_token": "Invalid token",
                     "details": str(error)
-                }
+                },
+                'status': status.HTTP_400_BAD_REQUEST,
             }, status=status.HTTP_400_BAD_REQUEST)
         except AuthTokenError as error:
             return Response({
                 "error": "Invalid credentials",
-                "details": str(error)
+                "details": str(error),
+                'status': status.HTTP_400_BAD_REQUEST,
             }, status=status.HTTP_400_BAD_REQUEST)
 
         print(user.email)
@@ -65,13 +83,15 @@ class SocialLoginView(generics.GenericAPIView):
         except HTTPError as error:
             return Response({
                 "error": "invalid token",
-                "details": str(error)
+                "details": str(error),
+                'status': status.HTTP_400_BAD_REQUEST,
             }, status=status.HTTP_400_BAD_REQUEST)
 
         except AuthForbidden as error:
             return Response({
                 "error": "invalid token",
-                "details": str(error)
+                "details": str(error),
+                'status': status.HTTP_400_BAD_REQUEST,
             }, status=status.HTTP_400_BAD_REQUEST)
 
         if authenticated_user and authenticated_user.is_active:
@@ -82,6 +102,7 @@ class SocialLoginView(generics.GenericAPIView):
             #customize the response to your needs
             response = {
                 "email": authenticated_user.email,
-                "token": token.key
+                "token": token.key,
+                'status': status.HTTP_200_OK,
             }
             return Response(status=status.HTTP_200_OK, data=response)
