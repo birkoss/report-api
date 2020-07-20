@@ -66,7 +66,7 @@ class ProjectsDetails(APIView):
 
         return Response({
             'status': status.HTTP_200_OK,
-            'projects': serializer.data
+            'project': serializer.data
         }, status=status.HTTP_200_OK)
 
     def delete(self, request, category_id, format=None):
