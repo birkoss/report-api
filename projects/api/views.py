@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from rest_framework import status, authentication, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -45,10 +46,15 @@ class ProjectsDetails(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, project_id, format=None):
-        project = Project.objects.filter(
-            user=request.user,
-            id=project_id
-        ).first()
+        project = None
+
+        try:
+            project = Project.objects.filter(
+                user=request.user,
+                id=project_id
+            ).first()
+        except ValidationError:
+            pass
 
         if project is None:
             return Response({
