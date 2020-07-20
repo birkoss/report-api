@@ -23,8 +23,8 @@ class UserStatus(APIView):
         serializer = serializers.UserSerializer(instance=request.user)
 
         return Response({
-            'account': serializer.data,
-            'status': status.HTTP_400_BAD_REQUEST,
+            'user': serializer.data,
+            'status': status.HTTP_200_OK,
         })
 
 

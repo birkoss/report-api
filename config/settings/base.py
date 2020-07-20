@@ -43,6 +43,7 @@ INSTALLED_APPS = [
 
     'core',
     'users',
+    'projects',
 
     'oauth2_provider',
     'social_django',
