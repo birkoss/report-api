@@ -14,4 +14,9 @@ urlpatterns = [
         api_views.ProjectsDetails.as_view(),
         name='api-projects-details'
     ),
+    path(
+        'projects/<str:project_id>/logs',
+        api_views.Logs.as_view(),
+        name='api-logs'
+    ),
 ]

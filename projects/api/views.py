@@ -3,8 +3,59 @@ from rest_framework import status, authentication, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .serializers import ProjectReadSerializer, ProjectWriteSerializer
-from ..models import Project
+from .serializers import (LogReadSerializer, LogWriteSerializer,
+                          ProjectReadSerializer, ProjectWriteSerializer)
+from ..models import Log, Project
+from ..helpers import get_project
+
+
+class Logs(APIView):
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, project_id, format=None):
+        project = get_project(
+            user=request.user,
+            id=project_id
+        )
+
+        logs = Log.objects.filter(
+            project=project,
+        ).order_by("name")
+
+        serializer = LogReadSerializer(instance=logs, many=True)
+
+        return Response({
+            'status': status.HTTP_200_OK,
+            'logs': serializer.data
+        }, status=status.HTTP_200_OK)
+
+    def post(self, request, project_id, format=None):
+        project = get_project(
+            user=request.user,
+            id=project_id
+        )
+
+        if project is None:
+            return Response({
+                'status': status.HTTP_404_NOT_FOUND,
+                'message': "This is not a valid project"
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = LogWriteSerializer(data=request.data)
+
+        if serializer.is_valid():
+            log = serializer.save(project=project)
+
+            return Response({
+                'log': LogReadSerializer(instance=log, many=False).data,
+                'status': status.HTTP_200_OK,
+            })
+        else:
+            return Response({
+                "status": status.HTTP_400_BAD_REQUEST,
+                'message': serializer.errors,
+            }, status=status.HTTP_400_BAD_REQUEST)
 
 
 class Projects(APIView):
@@ -24,7 +75,6 @@ class Projects(APIView):
         }, status=status.HTTP_200_OK)
 
     def post(self, request, format=None):
-        print(request.data)
         serializer = ProjectWriteSerializer(data=request.data)
 
         if serializer.is_valid():
@@ -46,15 +96,10 @@ class ProjectsDetails(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, project_id, format=None):
-        project = None
-
-        try:
-            project = Project.objects.filter(
-                user=request.user,
-                id=project_id
-            ).first()
-        except ValidationError:
-            pass
+        project = get_project(
+            user=request.user,
+            id=project_id
+        )
 
         if project is None:
             return Response({
