@@ -19,4 +19,9 @@ urlpatterns = [
         api_views.Logs.as_view(),
         name='api-logs'
     ),
+    path(
+        'logs/<str:log_id>',
+        api_views.LogsDetails.as_view(),
+        name='api-logs-details'
+    ),
 ]

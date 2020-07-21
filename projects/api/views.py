@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from .serializers import (LogReadSerializer, LogWriteSerializer,
                           ProjectReadSerializer, ProjectWriteSerializer)
 from ..models import Log, Project
-from ..helpers import get_project
+from ..helpers import get_log, get_project
 
 
 class Logs(APIView):
@@ -56,6 +56,59 @@ class Logs(APIView):
                 "status": status.HTTP_400_BAD_REQUEST,
                 'message': serializer.errors,
             }, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LogsDetails(APIView):
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, log_id, format=None):
+        log = get_log(
+            id=log_id
+        )
+        if log is None:
+            return Response({
+                'status': status.HTTP_404_NOT_FOUND,
+                'message': "This is not a valid log"
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        project = get_project(
+            user=request.user,
+            id=log.project.id
+        )
+        if project is None:
+            return Response({
+                'status': status.HTTP_404_NOT_FOUND,
+                'message': "This is not a valid log from your account"
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = LogReadSerializer(instance=log, many=False)
+
+        return Response({
+            'status': status.HTTP_200_OK,
+            'log': serializer.data
+        }, status=status.HTTP_200_OK)
+
+    def delete(self, request, category_id, format=None):
+        category = TransactionCategory.objects.filter(
+            id=category_id, user=request.user
+        ).annotate(transactions=Count('transaction')).first()
+
+        if category is None:
+            return Response({
+                "status": status.HTTP_404_NOT_FOUND,
+                "message": "This is not a valid category"
+            }, status.HTTP_404_NOT_FOUND)
+
+        if category.transactions == 0:
+            category.delete()
+        else:
+            category.is_active = False
+            category.save()
+
+        return Response({
+            "status": status.HTTP_200_OK
+        })
 
 
 class Projects(APIView):
