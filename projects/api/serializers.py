@@ -2,22 +2,22 @@ from rest_framework import serializers
 
 from users.api.serializers import UserSerializer
 
-from ..models import Log, Project
+from ..models import Project, Folder
 
 
-class SimpleLogSerializer(serializers.ModelSerializer):
+class SimpleFolderSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Log
+        model = Folder
         fields = ['id', 'name']
 
 
 class ProjectReadSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
-    logs = SimpleLogSerializer(read_only=True, many=True)
+    folders = SimpleFolderSerializer(read_only=True, many=True)
 
     class Meta:
         model = Project
-        fields = ['id', 'name', 'user', 'date_added', "logs"]
+        fields = ['id', 'name', 'user', 'date_added', "folders"]
 
 
 class ProjectWriteSerializer(serializers.ModelSerializer):
@@ -26,15 +26,15 @@ class ProjectWriteSerializer(serializers.ModelSerializer):
         fields = ['name']
 
 
-class LogReadSerializer(serializers.ModelSerializer):
+class FolderReadSerializer(serializers.ModelSerializer):
     project = ProjectReadSerializer(read_only=True)
 
     class Meta:
-        model = Log
+        model = Folder
         fields = ['id', 'name', 'project', 'date_added']
 
 
-class LogWriteSerializer(serializers.ModelSerializer):
+class FolderWriteSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Log
+        model = Folder
         fields = ['name']

@@ -15,13 +15,13 @@ urlpatterns = [
         name='api-projects-details'
     ),
     path(
-        'projects/<str:project_id>/logs',
-        api_views.Logs.as_view(),
-        name='api-logs'
+        'projects/<str:project_id>/folders',
+        api_views.Folders.as_view(),
+        name='api-folders'
     ),
     path(
-        'logs/<str:log_id>',
-        api_views.LogsDetails.as_view(),
-        name='api-logs-details'
+        'folders/<str:folder_id>',
+        api_views.FoldersDetails.as_view(),
+        name='api-folders-details'
     ),
 ]

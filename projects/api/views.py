@@ -3,13 +3,13 @@ from rest_framework import status, authentication, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .serializers import (LogReadSerializer, LogWriteSerializer,
+from .serializers import (FolderReadSerializer, FolderWriteSerializer,
                           ProjectReadSerializer, ProjectWriteSerializer)
-from ..models import Log, Project
-from ..helpers import get_log, get_project
+from ..models import Folder, Project
+from ..helpers import get_folder, get_project
 
 
-class Logs(APIView):
+class Folders(APIView):
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
@@ -19,15 +19,15 @@ class Logs(APIView):
             id=project_id
         )
 
-        logs = Log.objects.filter(
+        folders = Folder.objects.filter(
             project=project,
         ).order_by("name")
 
-        serializer = LogReadSerializer(instance=logs, many=True)
+        serializer = FolderReadSerializer(instance=folders, many=True)
 
         return Response({
             'status': status.HTTP_200_OK,
-            'logs': serializer.data
+            'folders': serializer.data
         }, status=status.HTTP_200_OK)
 
     def post(self, request, project_id, format=None):
@@ -42,13 +42,13 @@ class Logs(APIView):
                 'message': "This is not a valid project"
             }, status=status.HTTP_404_NOT_FOUND)
 
-        serializer = LogWriteSerializer(data=request.data)
+        serializer = FolderWriteSerializer(data=request.data)
 
         if serializer.is_valid():
-            log = serializer.save(project=project)
+            folder = serializer.save(project=project)
 
             return Response({
-                'log': LogReadSerializer(instance=log, many=False).data,
+                'folder': FolderReadSerializer(instance=folder, many=False).data,
                 'status': status.HTTP_200_OK,
             })
         else:
@@ -58,35 +58,35 @@ class Logs(APIView):
             }, status=status.HTTP_400_BAD_REQUEST)
 
 
-class LogsDetails(APIView):
+class FoldersDetails(APIView):
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request, log_id, format=None):
-        log = get_log(
-            id=log_id
+    def get(self, request, folder_id, format=None):
+        folder = get_folder(
+            id=folder_id
         )
-        if log is None:
+        if folder is None:
             return Response({
                 'status': status.HTTP_404_NOT_FOUND,
-                'message': "This is not a valid log"
+                'message': "This is not a valid folder"
             }, status=status.HTTP_404_NOT_FOUND)
 
         project = get_project(
             user=request.user,
-            id=log.project.id
+            id=folder.project.id
         )
         if project is None:
             return Response({
                 'status': status.HTTP_404_NOT_FOUND,
-                'message': "This is not a valid log from your account"
+                'message': "This is not a valid folder from your account"
             }, status=status.HTTP_404_NOT_FOUND)
 
-        serializer = LogReadSerializer(instance=log, many=False)
+        serializer = FolderReadSerializer(instance=folder, many=False)
 
         return Response({
             'status': status.HTTP_200_OK,
-            'log': serializer.data
+            'folder': serializer.data
         }, status=status.HTTP_200_OK)
 
     def delete(self, request, category_id, format=None):

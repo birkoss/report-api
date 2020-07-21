@@ -13,15 +13,15 @@ class Project(UUIDModel, TimeStampedModel):
         return self.name
 
 
-class Log(UUIDModel, TimeStampedModel):
+class Folder(UUIDModel, TimeStampedModel):
     name = models.CharField(max_length=100, null=False, blank=False)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='logs')
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='folders')
 
     def __str__(self):
         return self.name
 
 
-class EntryLevel(models.Model):
+class LogLevel(models.Model):
     slug = models.SlugField(max_length=100, unique=True)
     name = models.CharField(max_length=100)
 
@@ -29,16 +29,16 @@ class EntryLevel(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
-        super(EntryLevel, self).save(*args, **kwargs)
+        super(LogLevel, self).save(*args, **kwargs)
         if not self.slug:
             self.slug = slugify(self.name)
             self.save()
 
 
-class Entry(UUIDModel, TimeStampedModel):
-    log = models.ForeignKey(Log, on_delete=models.CASCADE)
-    level = models.ForeignKey(EntryLevel, on_delete=models.CASCADE)
+class Log(UUIDModel, TimeStampedModel):
+    folder = models.ForeignKey(Folder, on_delete=models.CASCADE)
+    level = models.ForeignKey(LogLevel, on_delete=models.CASCADE)
     content = models.TextField(null=True, blank=True)
 
     def __str__(self):
-        return self.log.name + " (" + self.date_added + ")"
+        return self.folder.name + " (" + self.date_added + ")"

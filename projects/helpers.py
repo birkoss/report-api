@@ -1,17 +1,17 @@
 from django.core.exceptions import ValidationError
 
-from .models import Log, Project
+from .models import Folder, Project
 
 
-def get_log(**kwargs):
-    log = None
+def get_folder(**kwargs):
+    folder = None
 
     try:
-        log = Log.objects.filter(**kwargs).first()
+        folder = Folder.objects.filter(**kwargs).first()
     except ValidationError:
         pass
 
-    return log
+    return folder
 
 
 def get_project(**kwargs):
