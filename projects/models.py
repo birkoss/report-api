@@ -49,4 +49,4 @@ class Log(UUIDModel, TimeStampedModel):
     content = models.TextField(null=True, blank=True)
 
     def __str__(self):
-        return self.folder.name# + " (" + self.date_added + ")"
+        return self.folder.name  # + " (" + self.date_added + ")"
