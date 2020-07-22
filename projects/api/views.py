@@ -16,11 +16,12 @@ class Folders(APIView):
     def get(self, request, project_id, format=None):
         project = get_project(
             user=request.user,
-            id=project_id
+            id=project_id,
         )
 
         folders = Folder.objects.filter(
             project=project,
+            is_active=True
         ).order_by("name")
 
         serializer = FolderReadSerializer(instance=folders, many=True)
@@ -117,7 +118,8 @@ class Projects(APIView):
 
     def get(self, request, format=None):
         projects = Project.objects.filter(
-            user=request.user
+            user=request.user,
+            is_active=True
         ).order_by("name")
 
         serializer = ProjectReadSerializer(instance=projects, many=True)

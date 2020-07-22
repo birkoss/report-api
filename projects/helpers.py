@@ -4,6 +4,8 @@ from .models import Folder, Project
 
 
 def get_folder(**kwargs):
+    kwargs['is_active'] = True
+
     folder = None
 
     try:
@@ -15,6 +17,8 @@ def get_folder(**kwargs):
 
 
 def get_project(**kwargs):
+    kwargs['is_active'] = True
+
     project = None
 
     try:

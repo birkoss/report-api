@@ -9,6 +9,8 @@ class Project(UUIDModel, TimeStampedModel):
     name = models.CharField(max_length=100, null=False, blank=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
+    is_active = models.BooleanField(default=True)
+
     def __str__(self):
         return self.name
 
@@ -16,6 +18,8 @@ class Project(UUIDModel, TimeStampedModel):
 class Folder(UUIDModel, TimeStampedModel):
     name = models.CharField(max_length=100, null=False, blank=False)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='folders')
+
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return self.name
