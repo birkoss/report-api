@@ -5,19 +5,12 @@ from users.api.serializers import UserSerializer
 from ..models import Project, Folder
 
 
-class SimpleFolderSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Folder
-        fields = ['id', 'name']
-
-
 class ProjectReadSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
-    folders = SimpleFolderSerializer(read_only=True, many=True)
 
     class Meta:
         model = Project
-        fields = ['id', 'name', 'user', 'date_added', "folders"]
+        fields = ['id', 'name', 'user', 'date_added']
 
 
 class ProjectWriteSerializer(serializers.ModelSerializer):
