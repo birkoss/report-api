@@ -1,3 +1,4 @@
+from django.db.models import Count
 from django.core.exceptions import ValidationError
 from rest_framework import status, authentication, permissions
 from rest_framework.response import Response
@@ -173,22 +174,23 @@ class ProjectsDetails(APIView):
             'project': serializer.data
         }, status=status.HTTP_200_OK)
 
-    def delete(self, request, category_id, format=None):
-        category = TransactionCategory.objects.filter(
-            id=category_id, user=request.user
-        ).annotate(transactions=Count('transaction')).first()
+    def delete(self, request, project_id, format=None):
+        project = Project.objects.filter(
+            id=project_id,
+            user=request.user
+        ).annotate(transactions=Count('folders')).first()
 
-        if category is None:
+        if project is None:
             return Response({
                 "status": status.HTTP_404_NOT_FOUND,
-                "message": "This is not a valid category"
+                "message": "This is not a valid project"
             }, status.HTTP_404_NOT_FOUND)
 
-        if category.transactions == 0:
-            category.delete()
+        if project.folders == 0:
+            project.delete()
         else:
-            category.is_active = False
-            category.save()
+            project.is_active = False
+            project.save()
 
         return Response({
             "status": status.HTTP_200_OK
