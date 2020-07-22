@@ -93,7 +93,46 @@ class FoldersDetails(APIView):
             'folder': serializer.data
         }, status=status.HTTP_200_OK)
 
-    def delete(self, request, category_id, format=None):
+    def put(self, request, folder_id, format=None):
+        folder = get_folder(
+            id=folder_id,
+        )
+
+        if folder is None:
+            return Response({
+                "status": status.HTTP_404_NOT_FOUND,
+                "message": "This is not a valid folder"
+            }, status.HTTP_404_NOT_FOUND)
+
+        project = get_project(
+            user=request.user,
+            id=folder.project.id
+        )
+
+        if project is None:
+            return Response({
+                "status": status.HTTP_404_NOT_FOUND,
+                "message": "This is not a valid project"
+            }, status.HTTP_404_NOT_FOUND)
+
+        serializer = FolderWriteSerializer(folder, data=request.data)
+
+        if serializer.is_valid():
+            folder = serializer.save()
+
+            return Response({
+                'folder': FolderReadSerializer(
+                    instance=folder, many=False
+                ).data,
+                'status': status.HTTP_200_OK,
+            })
+        else:
+            return Response({
+                "status": status.HTTP_400_BAD_REQUEST,
+                'message': serializer.errors,
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, folder, format=None):
         category = TransactionCategory.objects.filter(
             id=category_id, user=request.user
         ).annotate(transactions=Count('transaction')).first()
@@ -173,7 +212,7 @@ class ProjectsDetails(APIView):
             'status': status.HTTP_200_OK,
             'project': serializer.data
         }, status=status.HTTP_200_OK)
-    
+
     def put(self, request, project_id, format=None):
         project = get_project(
             id=project_id,
