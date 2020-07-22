@@ -49,7 +49,9 @@ class Folders(APIView):
             folder = serializer.save(project=project)
 
             return Response({
-                'folder': FolderReadSerializer(instance=folder, many=False).data,
+                'folder': FolderReadSerializer(
+                    instance=folder, many=False
+                ).data,
                 'status': status.HTTP_200_OK,
             })
         else:
@@ -136,7 +138,9 @@ class Projects(APIView):
             project = serializer.save(user=request.user)
 
             return Response({
-                'project': ProjectReadSerializer(instance=project, many=False).data,
+                'project': ProjectReadSerializer(
+                    instance=project, many=False
+                ).data,
                 'status': status.HTTP_200_OK,
             })
         else:
