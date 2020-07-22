@@ -173,6 +173,35 @@ class ProjectsDetails(APIView):
             'status': status.HTTP_200_OK,
             'project': serializer.data
         }, status=status.HTTP_200_OK)
+    
+    def put(self, request, project_id, format=None):
+        project = get_project(
+            id=project_id,
+            user=request.user
+        )
+
+        if project is None:
+            return Response({
+                "status": status.HTTP_404_NOT_FOUND,
+                "message": "This is not a valid project"
+            }, status.HTTP_404_NOT_FOUND)
+
+        serializer = ProjectWriteSerializer(project, data=request.data)
+
+        if serializer.is_valid():
+            project = serializer.save()
+
+            return Response({
+                'project': ProjectReadSerializer(
+                    instance=project, many=False
+                ).data,
+                'status': status.HTTP_200_OK,
+            })
+        else:
+            return Response({
+                "status": status.HTTP_400_BAD_REQUEST,
+                'message': serializer.errors,
+            }, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, project_id, format=None):
         project = Project.objects.filter(
