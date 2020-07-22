@@ -42,9 +42,11 @@ class LogLevel(models.Model):
 
 
 class Log(UUIDModel, TimeStampedModel):
-    folder = models.ForeignKey(Folder, on_delete=models.CASCADE)
+    folder = models.ForeignKey(
+        Folder, on_delete=models.CASCADE, related_name="logs"
+    )
     level = models.ForeignKey(LogLevel, on_delete=models.CASCADE)
     content = models.TextField(null=True, blank=True)
 
     def __str__(self):
-        return self.folder.name + " (" + self.date_added + ")"
+        return self.folder.name# + " (" + self.date_added + ")"

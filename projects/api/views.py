@@ -133,6 +133,28 @@ class FoldersDetails(APIView):
             }, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, folder, format=None):
+        # @TODO : Should be in the helpers
+        folder = Folder.objects.filter(
+            id=folder,
+            user=request.user
+        ).annotate(total_logs=Count('logs')).first()
+
+        if folder is None:
+            return Response({
+                "status": status.HTTP_404_NOT_FOUND,
+                "message": "This is not a valid folder"
+            }, status.HTTP_404_NOT_FOUND)
+
+        project = get_project(
+            user=request.user,
+            id=folder.project.id
+        )
+        if project is None:
+            return Response({
+                "status": status.HTTP_404_NOT_FOUND,
+                "message": "This is not a valid project"
+            }, status.HTTP_404_NOT_FOUND)
+
         category = TransactionCategory.objects.filter(
             id=category_id, user=request.user
         ).annotate(transactions=Count('transaction')).first()
@@ -243,6 +265,7 @@ class ProjectsDetails(APIView):
             }, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, project_id, format=None):
+        # @TODO : Should be in the helpers
         project = Project.objects.filter(
             id=project_id,
             user=request.user
