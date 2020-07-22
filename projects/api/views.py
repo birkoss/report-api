@@ -178,7 +178,7 @@ class ProjectsDetails(APIView):
         project = Project.objects.filter(
             id=project_id,
             user=request.user
-        ).annotate(transactions=Count('folders')).first()
+        ).annotate(total_folders=Count('folders')).first()
 
         if project is None:
             return Response({
@@ -186,7 +186,7 @@ class ProjectsDetails(APIView):
                 "message": "This is not a valid project"
             }, status.HTTP_404_NOT_FOUND)
 
-        if project.folders == 0:
+        if project.total_folders == 0:
             project.delete()
         else:
             project.is_active = False
